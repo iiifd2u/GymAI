@@ -3,8 +3,8 @@ import yt_dlp
 
 
 # Pommel horse
-links = ["https://www.youtube.com/watch?v=xWLOo6pPnqE"]
-folder_loaded_videos = os.path.join("data", "loaded_videos")
+links = ["https://youtu.be/iENtDEeocLQ?si=4cNBFLMe_-JolBvQ"]
+folder_loaded_videos = os.path.join("data", "loaded_videos", "male", "Floor", "Front Flip")
 
 ydl_opts = {
     'paths': {"home":folder_loaded_videos}
