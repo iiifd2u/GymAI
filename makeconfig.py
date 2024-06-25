@@ -6,7 +6,7 @@ root = os.getcwd()
 config = configparser.ConfigParser()
 
 config['paths'] = {
-    'model_weights': os.path.join("models", "yolo_models", "yolov8x-pose.pt"),
+    'model_weights': os.path.join("models", "yolo_models"),
     'folder_output_matrices':  "output_folder",
     'summary_matrix' : "summary_matrix.npy",
     'folder_input_imgs' : os.path.join("data", "input_images"),
