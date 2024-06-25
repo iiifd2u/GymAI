@@ -9,7 +9,7 @@ root = os.getcwd()
 config = configparser.ConfigParser()
 config.read(os.path.join("configfiles", "conf.ini"))
 # Инициализация переменных
-model_weights = config["paths"]["model_weights"]
+model_weights = os.path.join(config["paths"]["model_weights"], "yolov8x-pose.pt")
 
 
 device = torch.device("cuda:0") if torch.cuda.is_available() else torch.device("cpu")
