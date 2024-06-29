@@ -8,17 +8,20 @@ from shapely import Polygon, MultiPolygon, Point
 from scipy.sparse import coo_matrix
 from typing import Tuple, List
 
-weights = os.path.join("weights", "yolov8x-seg.pt")
+weights = os.path.join("models", "yolo_models","segmentation", "yolov8m-seg.pt")
 model = YOLO(weights)
 w, h = (300, 700)
 
 def predict_on_image(model, img, conf=0.5):
+    """Предсказывает для первого входящего Person всю информацию"""
 
     result = model.predict(img, conf=conf, save=False, device = "cpu")[0]
+    print(f"Result: {result}")
     cls = result.boxes.cls.cpu().numpy()    # cls, (N, 1)
     probs = result.boxes.conf.cpu().numpy()  # confidence score, (N, 1)
     boxes = result.boxes.xyxy.cpu().numpy()   # box with xyxy format, (N, 4)
     masks = result.masks.xy
+
     # masks = result.masks.data
 
     predicted_classes = [result.names[c] for c in cls]
@@ -63,8 +66,7 @@ def draw_polygon_on_real_img(real_img :np.ndarray, pol :Polygon, poligon_shape :
     scale_x = int(box[2] - box[0] ) /wp
 
     resized_mask = np.vstack([np.array(x, dtype=np.int32), np.array(y, dtype=np.int32)]).T
-    print \
-        (f"max x = {resized_mask[:, 0].max()} : {int(box[2] - box[0])} | max y = {resized_mask[:, 1].max()} : {int(box[3] - box[1])} ")
+    print(f"max x = {resized_mask[:, 0].max()} : {int(box[2] - box[0])} | max y = {resized_mask[:, 1].max()} : {int(box[3] - box[1])} ")
 
     data = np.ones(resized_mask.shape[0] ) *255 # контур делаем белым цветом
 
