@@ -123,7 +123,9 @@ class Motion():
         polygons =[]
         for frame in frames:
             p = create_polygon(frame)
-            polygons.append(p)
+            if p is not None:
+                polygons.append(p)
+        print(f"Количество полигонов: {len(polygons)}")
         return polygons
 
 
@@ -145,17 +147,17 @@ if __name__ == '__main__':
 
     name = "front_flip"
     flip = Motion(name) # Создаём класс для тренировки сальто
-    videopath = [r"data\loaded_videos\male\Floor\Front Flip\frontflip_tutorial.mp4"]
-
-    flip.train(data=videopath, name=name, cropped_st_end=[(24, 26)])
+    # videopath = [r"data\loaded_videos\male\Floor\Front Flip\frontflip_tutorial.mp4"]
+    #
+    # flip.train(data=videopath, name=name, cropped_st_end=[(24, 26)])
 
     # это полигоны из видео
-    # image = cv2.imread("from_images/pedestrians/Go/pedestrians_Go_0.jpg")
+    image = cv2.imread("data/my_videos/screenshot.jpg")
     polygons_real= flip.create_classification_polygons_from_numpy(os.path.join("numpies", f"frames_from_video_{name}.npy"))
 
-    for p, b in polygons_real:
-        # draw_polygon_on_real_img(image, p, (700, 300))
-        draw_polygon(p)
+    for p in polygons_real:
+        draw_polygon_on_real_img(image, p, (700, 300))
+        # draw_polygon(p)
 
 
 
