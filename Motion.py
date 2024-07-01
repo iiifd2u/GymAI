@@ -156,7 +156,7 @@ if __name__ == '__main__':
     image = cv2.imread("data/my_videos/screenshot.jpg")
     polygons_real= flip.create_classification_polygons_from_numpy(os.path.join("numpies", f"frames_from_video_{name}.npy"))
 
-    frames = Motion.split_video_to_fixed_frames(os.path.join("data", "my_videos", "IMG_9814.MOV"), count_frames=6)
+    frames = Motion.split_video_to_fixed_frames(os.path.join("data", "my_videos", "IMG_9814.MOV"), count_frames=8)
 
     for f, p in zip(frames, polygons_real):
         draw_polygon_on_real_img(f, p)

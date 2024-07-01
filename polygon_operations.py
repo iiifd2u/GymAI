@@ -103,8 +103,8 @@ def draw_polygon_on_real_img(real_img :np.ndarray, pol :Polygon, h=700, w = 300)
         masked_img_real = cv2.copyMakeBorder(mask_img_real, top, bottom, left, right, cv2.BORDER_CONSTANT,
                                         value=(0, 0, 0)).astype(np.uint8)
 
-        image = cv2.cvtColor(real_img, cv2.COLOR_BGR2RGB).astype(np.uint8)
-
+        # image = cv2.cvtColor(real_img, cv2.COLOR_BGR2RGB).astype(np.uint8)
+        image = real_img.astype(np.uint8)
         image_red_green = cv2.addWeighted(masked_img, 1, masked_img_real, 1, 0)
 
         image_combined = cv2.addWeighted(image, 1 - alpha, image_red_green, alpha, 0)
