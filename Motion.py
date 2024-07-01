@@ -34,7 +34,7 @@ class Motion():
             cropped_video = self.__crop_video_by_nn(file, st_time=st_time, end_time=end_time)
             print(cropped_video)
             # cropped_video = file
-            frames = self.__split_video_to_fixed_frames(cropped_video, self.frames)
+            frames = self.split_video_to_fixed_frames(cropped_video, self.frames)
             print(len(frames))
             print(frames.shape)
 
@@ -47,7 +47,8 @@ class Motion():
 
         return timestamps_all
 
-    def __split_video_to_fixed_frames(self, video_path, count_frames)->np.ndarray:
+    @staticmethod
+    def split_video_to_fixed_frames( video_path, count_frames)->np.ndarray:
 
         cap = cv2.VideoCapture(video_path)
         if not cap.isOpened():
@@ -155,8 +156,10 @@ if __name__ == '__main__':
     image = cv2.imread("data/my_videos/screenshot.jpg")
     polygons_real= flip.create_classification_polygons_from_numpy(os.path.join("numpies", f"frames_from_video_{name}.npy"))
 
-    for p in polygons_real:
-        draw_polygon_on_real_img(image, p, (700, 300))
+    frames = Motion.split_video_to_fixed_frames(os.path.join("data", "my_videos", "IMG_9814.MOV"), count_frames=6)
+
+    for f, p in zip(frames, polygons_real):
+        draw_polygon_on_real_img(f, p)
         # draw_polygon(p)
 
 
