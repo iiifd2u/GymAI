@@ -4,7 +4,11 @@ from typing import List, Tuple, Dict, Union, Optional
 import numpy as np
 import pickle
 import matplotlib.pyplot as plt
-from polygon_operations import create_polygon, draw_polygon, draw_polygon_on_real_img
+from polygon_operations import create_polygon, \
+    draw_polygon, \
+    draw_polygon_on_real_img, \
+    create_gif_from_real_and_ideal, \
+    create_combined_image
 
 
 class Motion():
@@ -153,14 +157,23 @@ if __name__ == '__main__':
     # flip.train(data=videopath, name=name, cropped_st_end=[(24, 26)])
 
     # это полигоны из видео
-    image = cv2.imread("data/my_videos/screenshot.jpg")
-    polygons_real= flip.create_classification_polygons_from_numpy(os.path.join("numpies", f"frames_from_video_{name}.npy"))
+    # image = cv2.imread("data/my_videos/screenshot.jpg")
+    polygons_ideal= flip.create_classification_polygons_from_numpy(os.path.join("numpies", f"frames_from_video_{name}.npy"))
 
-    frames = Motion.split_video_to_fixed_frames(os.path.join("data", "my_videos", "IMG_9814.MOV"), count_frames=8)
+    frames_real = Motion.split_video_to_fixed_frames(os.path.join("data", "my_videos", "IMG_9814.MOV"), count_frames=9)
 
-    for f, p in zip(frames, polygons_real):
-        draw_polygon_on_real_img(f, p)
+
+    # for f, p in zip(frames_real, polygons_ideal):
+    #     draw_polygon_on_real_img(f, p)
         # draw_polygon(p)
+    print(f"Длины массивов: реальный = {len(frames_real)}, идеальный = {len(polygons_ideal)}")
+    # Гифка
+    create_gif_from_real_and_ideal(real_images=frames_real,
+                                   ideal_polygons=polygons_ideal,
+                                   savepath="output_videos")
+
+
+
 
 
 

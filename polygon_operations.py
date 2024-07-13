@@ -60,7 +60,7 @@ def draw_polygon(pol :Polygon, h=700, w = 300):
     plt.imshow(image)
     plt.show()
 
-def draw_polygon_on_real_img(real_img :np.ndarray, pol :Polygon, h=700, w = 300):
+def create_combined_image(real_img :np.ndarray, pol :Polygon, h=700, w = 300):
     """Передать реальное изображение и другой полигон, посмотреть как он ложиться на силуэт"""
 
     result = predict_on_image(model, real_img)  # рамка, маска(контур объекта), _, вероятность, размер изображения
@@ -69,8 +69,7 @@ def draw_polygon_on_real_img(real_img :np.ndarray, pol :Polygon, h=700, w = 300)
         alpha = 0.3
 
         mask_real = np.vstack([mask_real[:, 0]- box[0], mask_real[:, 1]- box[1]]).T
-        pol_real = Polygon(mask_real.tolist())
-
+        # pol_real = Polygon(mask_real.tolist())
 
         hs, ws, he, we = pol.bounds
         hr, wr = real_img.shape[:2]
@@ -108,8 +107,51 @@ def draw_polygon_on_real_img(real_img :np.ndarray, pol :Polygon, h=700, w = 300)
         image_red_green = cv2.addWeighted(masked_img, 1, masked_img_real, 1, 0)
 
         image_combined = cv2.addWeighted(image, 1 - alpha, image_red_green, alpha, 0)
-        plt.imshow(image_combined)
-        plt.show()
+        return image_combined
+
+def draw_polygon_on_real_img(real_img :np.ndarray, pol :Polygon, h=700, w = 300):
+    image_combined = create_combined_image(real_img, pol, h, w)
+    plt.imshow(image_combined)
+    plt.show()
+
+def create_gif_from_real_and_ideal(real_images:List, ideal_polygons:List, savepath:str):
+    """
+    собираем гифку из изображений с наложенными полигонами
+    :param real_images:
+    :param ideal_images:
+    :param savepath:
+    :return:
+    """
+
+    if len(real_images)==len(ideal_polygons):
+        if not os.path.exists(savepath):
+            try:
+                os.makedirs(savepath, exist_ok=True)
+            except Exception as e:
+                print("Ошибка из гифки: ", e)
+                return None
+
+        combo_images = []
+        (width, height) = real_images[0].shape[:2]
+        print(width, height)
+        for r, i in zip(real_images, ideal_polygons):
+            combo_images.append(create_combined_image(real_img=r, pol=i, h=h, w=w))
+
+        fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+        video = cv2.VideoWriter(os.path.join(savepath, f"video.mp4"), fourcc, 10, (width, height))
+
+        for ci in combo_images:
+            if ci is not None:
+                plt.imshow(ci)
+                plt.show()
+
+                # video.write(ci)
+
+        # cv2.destroyAllWindows()
+        # video.release()
+
+    else:
+        print("Ошибка, массивы различной длины!")
 
 def create_polygon(img :np.ndarray, h = 700, w = 300 )->Polygon:
 
