@@ -15,7 +15,7 @@ from polygon_operations import create_polygon, \
 class Motion():
 
     def __init__(self, name,
-                 frames = 20,
+                 frames,
                  frame_size = (700, 300)):
         self.name = name
         self.frames = frames
@@ -53,7 +53,7 @@ class Motion():
         return timestamps_all
 
     @staticmethod
-    def split_video_to_fixed_frames( video_path, count_frames)->np.ndarray:
+    def split_video_to_fixed_frames(video_path, count_frames)->np.ndarray:
 
         cap = cv2.VideoCapture(video_path)
         if not cap.isOpened():
@@ -159,7 +159,7 @@ class Motion():
 if __name__ == '__main__':
 
     name = "front_flip"
-    flip = Motion(name) # Создаём класс для тренировки сальто
+    flip = Motion(name, frames=30) # Создаём класс для тренировки сальто
     # videopath = [r"data\loaded_videos\male\Floor\Front Flip\frontflip_tutorial.mp4"]
     #
     # flip.train(data=videopath, name=name, cropped_st_end=[(24, 26)])
@@ -169,9 +169,9 @@ if __name__ == '__main__':
 
 
     ###
-    # polygons_ideal= flip.create_classification_polygons_from_numpy(os.path.join("numpies", f"frames_from_video_{name}.npy"))
-    # savepath = os.path.join("polygons", "somePolygons")
-    # flip.save_polygons(savepath)
+    polygons_ideal= flip.create_classification_polygons_from_numpy(os.path.join("numpies", f"frames_from_video_{name}.npy"))
+    savepath = os.path.join("polygons", "somePolygons")
+    flip.save_polygons(savepath)
     # exit()
 
 
@@ -192,8 +192,9 @@ if __name__ == '__main__':
     #                                ideal_polygons=polygons_ideal,
     #                                savepath="output_videos")
     save_gif_with_imageio(real_images=frames_real,
-                                   ideal_polygons=polygons_ideal,
-                                   savepath=os.path.join("output_videos", "gifs", "example.gif"))
+                          ideal_polygons=polygons_ideal,
+                          savepath=os.path.join("output_videos", "gifs", "example.gif"),
+                          gif_size=(320, 480))
 
 
 
