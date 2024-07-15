@@ -1,8 +1,8 @@
 import os
 import traceback
-
 import cv2
 import math
+import imageio
 import numpy as np
 import matplotlib.pyplot as plt
 from ultralytics import YOLO
@@ -60,7 +60,7 @@ def draw_polygon(pol :Polygon, h=700, w = 300):
     plt.imshow(image)
     plt.show()
 
-def create_combined_image(real_img :np.ndarray, pol :Polygon, h=700, w = 300):
+def create_combined_image(real_img :np.ndarray, pol :Polygon, h=700, w = 300)->np.ndarray:
     """Передать реальное изображение и другой полигон, посмотреть как он ложиться на силуэт"""
 
     result = predict_on_image(model, real_img)  # рамка, маска(контур объекта), _, вероятность, размер изображения
@@ -114,7 +114,30 @@ def draw_polygon_on_real_img(real_img :np.ndarray, pol :Polygon, h=700, w = 300)
     plt.imshow(image_combined)
     plt.show()
 
-def create_gif_from_real_and_ideal(real_images:List, ideal_polygons:List, savepath:str):
+def save_gif_with_imageio(real_images:List, ideal_polygons:List, savepath:str):
+    """Сохраняем гифку"""
+    if len(real_images)==len(ideal_polygons):
+        # if not os.path.exists(savepath):
+        #     try:
+        #         os.makedirs(savepath, exist_ok=True)
+        #     except Exception as e:
+        #         print("Ошибка из гифки: ", e)
+        #         return None
+
+        combo_images = []
+        (width, height) = real_images[0].shape[:2]
+        print(f"ширина х высота  = {width} x {height}")
+        for real, ideal in zip(real_images, ideal_polygons):
+            combo_img = create_combined_image(real_img=real, pol=ideal, h=h, w=w)
+            if combo_img is not None:
+                combo_images.append(combo_img)
+
+        for img in combo_images:
+            print(img.shape)
+    kwargs = {'duration':10, 'fps':2}
+    imageio.mimsave(uri=savepath, ims=combo_images, format='GIF', **kwargs)
+
+def create_video_from_real_and_ideal(real_images:List, ideal_polygons:List, savepath:str):
     """
     собираем гифку из изображений с наложенными полигонами
     :param real_images:
@@ -133,22 +156,21 @@ def create_gif_from_real_and_ideal(real_images:List, ideal_polygons:List, savepa
 
         combo_images = []
         (width, height) = real_images[0].shape[:2]
-        print(width, height)
-        for r, i in zip(real_images, ideal_polygons):
-            combo_images.append(create_combined_image(real_img=r, pol=i, h=h, w=w))
+        print(f"ширина х высота  = {width} x {height}")
+        for real, ideal in zip(real_images, ideal_polygons):
+            combo_img = create_combined_image(real_img=real, pol=ideal, h=h, w=w)
+            if combo_img is not None:
+                combo_images.append(combo_img.astype(np.uint8))
 
-        fourcc = cv2.VideoWriter_fourcc(*'mp4v')
-        video = cv2.VideoWriter(os.path.join(savepath, f"video.mp4"), fourcc, 10, (width, height))
+        # fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+        fourcc =cv2.VideoWriter_fourcc(*'DIVX')
+        video = cv2.VideoWriter(os.path.join(savepath, f"video.avi"), fourcc, 1., (width, height))
 
         for ci in combo_images:
-            if ci is not None:
-                plt.imshow(ci)
-                plt.show()
+            video.write(ci)
 
-                # video.write(ci)
-
-        # cv2.destroyAllWindows()
-        # video.release()
+        video.release()
+        cv2.destroyAllWindows()
 
     else:
         print("Ошибка, массивы различной длины!")
@@ -162,17 +184,17 @@ def create_polygon(img :np.ndarray, h = 700, w = 300 )->Polygon:
         polygon = Polygon(mask_cropped.tolist())
         bounds = polygon.bounds
         h_cur, w_cur = (bounds[2]-bounds[0], bounds[3]-bounds[1])
-        print(f"polygon before w x h = {w_cur} x {h_cur}")
+        # print(f"polygon before w x h = {w_cur} x {h_cur}")
 
         scale_h = (h) / h_cur # коэффициент рескейла
         scale_w = (w) / w_cur
 
-        print(f"Коэффициенты масштабирования w: {scale_w} | h:{scale_h}")
+        # print(f"Коэффициенты масштабирования w: {scale_w} | h:{scale_h}")
 
         polygon  =affinity.scale(polygon, xfact=scale_h, yfact=scale_w)
         bounds = polygon.bounds
         h_cur, w_cur = (bounds[2] - bounds[0], bounds[3] - bounds[1])
-        print(f"polygon after w x h = {w_cur} x {h_cur}")
+        # print(f"polygon after w x h = {w_cur} x {h_cur}")
 
         # # перемастабированная маска в виде координат границы
         # mask_cropped = np.vstack([list(map(lambda el: math.floor(el), mask_cropped[:, 0] * scale_y)),
