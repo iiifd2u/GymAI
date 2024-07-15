@@ -1,5 +1,6 @@
 import os
 import cv2
+import pickle
 from typing import List, Tuple, Dict, Union, Optional
 import numpy as np
 import pickle
@@ -7,14 +8,14 @@ import matplotlib.pyplot as plt
 from polygon_operations import create_polygon, \
     draw_polygon, \
     draw_polygon_on_real_img, \
-    create_gif_from_real_and_ideal, \
-    create_combined_image
+    create_video_from_real_and_ideal, \
+    create_combined_image, save_gif_with_imageio
 
 
 class Motion():
 
     def __init__(self, name,
-                 frames = 10,
+                 frames = 20,
                  frame_size = (700, 300)):
         self.name = name
         self.frames = frames
@@ -122,8 +123,8 @@ class Motion():
         cv2.destroyAllWindows()
         return output_video
 
-
     def create_classification_polygons_from_numpy(self, numpy_path:str):
+
         frames = np.load(numpy_path)
         polygons =[]
         for frame in frames:
@@ -131,6 +132,7 @@ class Motion():
             if p is not None:
                 polygons.append(p)
         print(f"Количество полигонов: {len(polygons)}")
+        self.polygons = polygons
         return polygons
 
 
@@ -141,12 +143,18 @@ class Motion():
         for stand, go in zip(images_stand, images_go):
             polygons.append(create_polygon(stand))
             polygons.append(create_polygon(go))
+        self.polygons = polygons
         return polygons
 
 
+    def save_polygons(self, savepath:str):
+        with open(savepath, "wb") as f:
+            pickle.dump(self.polygons, f)
 
-
-
+    def load_polygons(self, loadpath:str):
+        with open(loadpath, "rb") as f:
+            self.polygons = pickle.load(f)
+        return self.polygons
 
 if __name__ == '__main__':
 
@@ -158,19 +166,34 @@ if __name__ == '__main__':
 
     # это полигоны из видео
     # image = cv2.imread("data/my_videos/screenshot.jpg")
-    polygons_ideal= flip.create_classification_polygons_from_numpy(os.path.join("numpies", f"frames_from_video_{name}.npy"))
 
-    frames_real = Motion.split_video_to_fixed_frames(os.path.join("data", "my_videos", "IMG_9814.MOV"), count_frames=9)
+
+    ###
+    # polygons_ideal= flip.create_classification_polygons_from_numpy(os.path.join("numpies", f"frames_from_video_{name}.npy"))
+    # savepath = os.path.join("polygons", "somePolygons")
+    # flip.save_polygons(savepath)
+    # exit()
+
+
+    ###
+    loadpath = os.path.join("polygons", "somePolygons")
+    polygons_ideal = flip.load_polygons(loadpath)
+    frames_real = Motion.split_video_to_fixed_frames(os.path.join("data", "my_videos", "CUTTED_9814.MOV"), count_frames=18)
 
 
     # for f, p in zip(frames_real, polygons_ideal):
     #     draw_polygon_on_real_img(f, p)
         # draw_polygon(p)
+    polygons_ideal = polygons_ideal[4:]
     print(f"Длины массивов: реальный = {len(frames_real)}, идеальный = {len(polygons_ideal)}")
     # Гифка
-    create_gif_from_real_and_ideal(real_images=frames_real,
+
+    # create_video_from_real_and_ideal(real_images=frames_real,
+    #                                ideal_polygons=polygons_ideal,
+    #                                savepath="output_videos")
+    save_gif_with_imageio(real_images=frames_real,
                                    ideal_polygons=polygons_ideal,
-                                   savepath="output_videos")
+                                   savepath=os.path.join("output_videos", "gifs", "example.gif"))
 
 
 
