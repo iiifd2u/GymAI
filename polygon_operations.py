@@ -114,26 +114,16 @@ def draw_polygon_on_real_img(real_img :np.ndarray, pol :Polygon, h=700, w = 300)
     plt.imshow(image_combined)
     plt.show()
 
-def save_gif_with_imageio(real_images:List, ideal_polygons:List, savepath:str):
+def save_gif_with_imageio(real_images:List, ideal_polygons:List, savepath:str, gif_size:Tuple[int, int]):
     """Сохраняем гифку"""
     if len(real_images)==len(ideal_polygons):
-        # if not os.path.exists(savepath):
-        #     try:
-        #         os.makedirs(savepath, exist_ok=True)
-        #     except Exception as e:
-        #         print("Ошибка из гифки: ", e)
-        #         return None
-
         combo_images = []
-        (width, height) = real_images[0].shape[:2]
-        print(f"ширина х высота  = {width} x {height}")
+
         for real, ideal in zip(real_images, ideal_polygons):
             combo_img = create_combined_image(real_img=real, pol=ideal, h=h, w=w)
             if combo_img is not None:
-                combo_images.append(combo_img)
+                combo_images.append(cv2.resize(combo_img, gif_size))
 
-        for img in combo_images:
-            print(img.shape)
     kwargs = {'duration':10, 'fps':2}
     imageio.mimsave(uri=savepath, ims=combo_images, format='GIF', **kwargs)
 
