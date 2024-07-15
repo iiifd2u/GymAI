@@ -10,7 +10,7 @@
 
 ## Пример сравнения
 
-![Картинка](https://github.com/iiifd2u/GymAI/blob/main/records/02.07.24/Снимок.JPG)
+![Картинка](https://github.com/iiifd2u/GymAI/blob/main/output_videos/gifs/example.gif)
 
 ## Принцип работы
 
