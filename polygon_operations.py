@@ -225,10 +225,12 @@ def numpy_to_polygons(frames:np.ndarray)->List[Polygon]:
     while None in polygons:
         # print(polygons)
         for idx_p, p in enumerate(polygons[1:-2]):
+            idx_p = idx_p+1
+            print(f"p = {p}")
             if p is not None:
                 continue
             else:
-                print(f"p[{idx_p}] is none!")
+
                 if polygons[idx_p+1] is not None:
                     polygons[idx_p] = average_polygon(polygons[idx_p-1], polygons[idx_p+1])
                     print(f"AVG p[{idx_p}] = {polygons[idx_p]}")
@@ -236,6 +238,8 @@ def numpy_to_polygons(frames:np.ndarray)->List[Polygon]:
 
                     polygons[idx_p] = polygons[idx_p-1]
                     print(f"OLD p[{idx_p}] = {polygons[idx_p]}")
+                # print(f"p[{idx_p}] is null")
+                # print(polygons[9])
 
     print(*polygons, sep='\n')
     return polygons
