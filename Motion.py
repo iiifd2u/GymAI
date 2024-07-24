@@ -9,7 +9,7 @@ from polygon_operations import create_polygon, \
     draw_polygon, \
     draw_polygon_on_real_img, \
     create_video_from_real_and_ideal, \
-    create_combined_image, save_gif_with_imageio
+    create_combined_image, save_gif_with_imageio, numpy_to_polygons
 
 
 class Motion():
@@ -123,14 +123,17 @@ class Motion():
         cv2.destroyAllWindows()
         return output_video
 
+
+
     def create_classification_polygons_from_numpy(self, numpy_path:str):
 
         frames = np.load(numpy_path)
-        polygons =[]
-        for frame in frames:
-            p = create_polygon(frame)
-            if p is not None:
-                polygons.append(p)
+        # polygons =[]
+        # for frame in frames:
+        #     p = create_polygon(frame)
+        #     if p is not None:
+        #         polygons.append(p)
+        polygons = numpy_to_polygons(frames)
         print(f"Количество полигонов: {len(polygons)}")
         self.polygons = polygons
         return polygons
@@ -172,7 +175,7 @@ if __name__ == '__main__':
     polygons_ideal= flip.create_classification_polygons_from_numpy(os.path.join("numpies", f"frames_from_video_{name}.npy"))
     savepath = os.path.join("polygons", "somePolygons")
     flip.save_polygons(savepath)
-    # exit()
+    exit()
 
 
     ###

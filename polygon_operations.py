@@ -8,7 +8,8 @@ import matplotlib.pyplot as plt
 from ultralytics import YOLO
 from shapely import Polygon, MultiPolygon, Point, affinity
 from scipy.sparse import coo_matrix
-from typing import Tuple, List
+from typing import Tuple, List, Optional
+
 
 weights = os.path.join("models", "yolo_models","segmentation", "yolov8m-seg.pt")
 model = YOLO(weights)
@@ -165,7 +166,7 @@ def create_video_from_real_and_ideal(real_images:List, ideal_polygons:List, save
     else:
         print("Ошибка, массивы различной длины!")
 
-def create_polygon(img :np.ndarray, h = 700, w = 300 )->Polygon:
+def create_polygon(img :np.ndarray, h = 700, w = 300 )->Optional[Polygon]:
 
     result = predict_on_image(model, img) # рамка, маска(контур объекта), _, вероятность, размер изображения
     if result is not None:
@@ -194,3 +195,53 @@ def create_polygon(img :np.ndarray, h = 700, w = 300 )->Polygon:
         #
         # polygon = Polygon(mask_cropped.tolist())
         return polygon
+    return None
+
+def average_polygon(pol_1:Polygon, pol_2:Polygon)->Polygon:
+    """Заглушка"""
+    return pol_1.intersection(pol_2)
+
+def numpy_to_polygons(frames:np.ndarray)->List[Polygon]:
+    """Переводит все кадры в полигон, достраивая до необходимого количества
+    искуственные полигоны"""
+    print(len(frames))
+    polygons = [create_polygon(f) for f in frames]
+    #Первым становиться первый нормальный
+    for p in polygons:
+        if p is None:
+            continue
+        else:
+            polygons[0] = p
+            break
+
+    # Последним становится последний нормальный
+    for p in polygons[::-1]:
+        if p is None:
+            continue
+        else:
+            polygons[-1] = p
+            break
+    # Костыльное решение
+    while None in polygons:
+        # print(polygons)
+        for idx_p, p in enumerate(polygons[1:-2]):
+            if p is not None:
+                continue
+            else:
+                print(f"p[{idx_p}] is none!")
+                if polygons[idx_p+1] is not None:
+                    polygons[idx_p] = average_polygon(polygons[idx_p-1], polygons[idx_p+1])
+                    print(f"AVG p[{idx_p}] = {polygons[idx_p]}")
+                else:
+
+                    polygons[idx_p] = polygons[idx_p-1]
+                    print(f"OLD p[{idx_p}] = {polygons[idx_p]}")
+
+    print(*polygons, sep='\n')
+    return polygons
+
+    # polygons = []
+    # for idx_f, f in enumerate(frames[1:-2]):
+    #     p = create_polygon(f)
+    #     if p is None:
+    #
