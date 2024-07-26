@@ -23,8 +23,6 @@ def get_video_duration(videopath:str):
         # cmd_spl = shlex.split(cmd)
         cmd_spl = cmd.split(" ")
         process = subprocess.Popen(cmd_spl, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
-        print(cmd_spl)
-        print(process.stderr)
         return float(process.stdout.read().decode())
     except:
         print(traceback.format_exc())
