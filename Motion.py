@@ -10,7 +10,7 @@ from polygon_operations import create_polygon, \
     draw_polygon_on_real_img, \
     create_video_from_real_and_ideal, \
     create_combined_image, save_gif_with_imageio, numpy_to_polygons
-
+from video_operations import get_video_duration
 
 class Motion():
 
@@ -58,14 +58,18 @@ class Motion():
         cap = cv2.VideoCapture(video_path)
         if not cap.isOpened():
             print("Closed!")
-        all_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
-        print(all_frames)
-        fps = cap.get(cv2.CAP_PROP_FPS)
-        print(fps)
-
-        time_step = (all_frames/fps)/count_frames # В секундах
-        print(time_step)
-        step_points = [time_step*el for el in range(count_frames)] # В секундах
+        # all_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+        # print(all_frames)
+        # fps = cap.get(cv2.CAP_PROP_FPS)
+        # print(fps)
+        #
+        # time_step = (all_frames/fps)/count_frames # В секундах
+        # print(time_step)
+        # step_points = [time_step*el for el in range(count_frames)] # В секундах
+        video_duration = get_video_duration(video_path)
+        step_points = np.linspace(0, video_duration, count_frames+1)
+        print(step_points)
+        print(len(step_points))
         step_idx = 0
         frames = []
 
@@ -77,7 +81,7 @@ class Motion():
                 if t>=step_points[step_idx]:
                     step_idx+=1
                     frames.append(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
-                    if step_idx >=count_frames:
+                    if step_idx > count_frames:
                         break
             else:
                 break
@@ -188,12 +192,11 @@ if __name__ == '__main__':
     # exit()
     frames_real = Motion.split_video_to_fixed_frames(os.path.join("data", "my_videos", "CUTTED_9814.MOV"), count_frames=20)
     print("len frames real =", len(frames_real))
-    exit()
+    # exit()
 
     # for f, p in zip(frames_real, polygons_ideal):
     #     draw_polygon_on_real_img(f, p)
         # draw_polygon(p)
-    polygons_ideal = polygons_ideal[4:]
     print(f"Длины массивов: реальный = {len(frames_real)}, идеальный = {len(polygons_ideal)}")
     # Гифка
 
@@ -202,7 +205,7 @@ if __name__ == '__main__':
     #                                savepath="output_videos")
     save_gif_with_imageio(real_images=frames_real,
                           ideal_polygons=polygons_ideal,
-                          savepath=os.path.join("output_videos", "gifs", "example.gif"),
+                          savepath=os.path.join("output_videos", "gifs", "example_2.gif"),
                           gif_size=(320, 480))
 
 
