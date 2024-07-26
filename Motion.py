@@ -64,6 +64,7 @@ class Motion():
         print(fps)
 
         time_step = (all_frames/fps)/count_frames # В секундах
+        print(time_step)
         step_points = [time_step*el for el in range(count_frames)] # В секундах
         step_idx = 0
         frames = []
@@ -172,17 +173,22 @@ if __name__ == '__main__':
 
 
     ###
-    polygons_ideal= flip.create_classification_polygons_from_numpy(os.path.join("numpies", f"frames_from_video_{name}.npy"))
-    savepath = os.path.join("polygons", "somePolygons")
-    flip.save_polygons(savepath)
-    exit()
+    # polygons_ideal= flip.create_classification_polygons_from_numpy(os.path.join("numpies", f"frames_from_video_{name}.npy"))
+    # savepath = os.path.join("polygons", "somePolygons")
+    # flip.save_polygons(savepath)
+    # exit()
 
 
     ###
     loadpath = os.path.join("polygons", "somePolygons")
     polygons_ideal = flip.load_polygons(loadpath)
-    frames_real = Motion.split_video_to_fixed_frames(os.path.join("data", "my_videos", "CUTTED_9814.MOV"), count_frames=18)
-
+    print("len frames ideal =", len(polygons_ideal))
+    # for polygon in polygons_ideal:
+    #     draw_polygon(polygon)
+    # exit()
+    frames_real = Motion.split_video_to_fixed_frames(os.path.join("data", "my_videos", "CUTTED_9814.MOV"), count_frames=20)
+    print("len frames real =", len(frames_real))
+    exit()
 
     # for f, p in zip(frames_real, polygons_ideal):
     #     draw_polygon_on_real_img(f, p)
