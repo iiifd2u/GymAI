@@ -9,7 +9,9 @@ from polygon_operations import create_polygon, \
     draw_polygon, \
     draw_polygon_on_real_img, \
     create_video_from_real_and_ideal, \
-    create_combined_image, save_gif_with_imageio, numpy_to_polygons
+    save_gif_with_imageio, numpy_to_polygons, \
+    create_combined_images
+
 from video_operations import get_video_duration
 
 class Motion():
@@ -203,10 +205,12 @@ if __name__ == '__main__':
     # create_video_from_real_and_ideal(real_images=frames_real,
     #                                ideal_polygons=polygons_ideal,
     #                                savepath="output_videos")
-    save_gif_with_imageio(real_images=frames_real,
-                          ideal_polygons=polygons_ideal,
-                          savepath=os.path.join("output_videos", "gifs", "example_2.gif"),
-                          gif_size=(320, 480))
+    combined_images = create_combined_images(real_images=frames_real, ideal_polygons=polygons_ideal, img_size=(320, 480))
+    save_gif_with_imageio(savepath=os.path.join("output_videos", "gifs", "example_3.gif"), combo_images=combined_images)
+    # save_gif_with_imageio(real_images=frames_real,
+    #                       ideal_polygons=polygons_ideal,
+    #                       savepath=os.path.join("output_videos", "gifs", "example_2.gif"),
+    #                       gif_size=(320, 480))
 
 
 
