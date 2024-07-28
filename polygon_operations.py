@@ -106,8 +106,30 @@ def create_combined_image(real_img :np.ndarray, pol :Polygon, h=700, w = 300)->n
         # image = cv2.cvtColor(real_img, cv2.COLOR_BGR2RGB).astype(np.uint8)
         image = real_img.astype(np.uint8)
         image_red_green = cv2.addWeighted(masked_img, 1, masked_img_real, 1, 0)
-
         image_combined = cv2.addWeighted(image, 1 - alpha, image_red_green, alpha, 0)
+
+
+        ################### КУСОК ДЛЯ ПОСТРОЕНИЯ ПОЛИГОНА ###########################
+
+        mask_cropped = np.vstack(
+            [mask[:, 1] - box[1], mask[:, 0] - box[0]]).T  # H, W координаты начинают считататься от нижнего угла рамки,
+        polygon = Polygon(mask_cropped.tolist())
+        bounds = polygon.bounds
+        h_cur, w_cur = (bounds[2] - bounds[0], bounds[3] - bounds[1])
+        # print(f"polygon before w x h = {w_cur} x {h_cur}")
+
+        scale_h = (h) / h_cur  # коэффициент рескейла
+        scale_w = (w) / w_cur
+
+        # print(f"Коэффициенты масштабирования w: {scale_w} | h:{scale_h}")
+
+        pol_ideal = affinity.scale(polygon, xfact=scale_h, yfact=scale_w)
+        print("pol area =", pol.area)
+        print("pol ideal =", pol_ideal.area)
+
+
+        iou = get_IOU(pol, pol_ideal)
+        print(f"iou = {iou}")
         return image_combined
 
 def draw_polygon_on_real_img(real_img :np.ndarray, pol :Polygon, h=700, w = 300):
@@ -115,17 +137,23 @@ def draw_polygon_on_real_img(real_img :np.ndarray, pol :Polygon, h=700, w = 300)
     plt.imshow(image_combined)
     plt.show()
 
-def save_gif_with_imageio(real_images:List, ideal_polygons:List, savepath:str, gif_size:Tuple[int, int]):
-    """Сохраняем гифку"""
+def create_combined_images(real_images:List, ideal_polygons:List, img_size:Tuple[int, int]):
+    """Из массива изображений и полигонов
+    идеального выполнения формирует наложенные друг на друга изображения
+    """
     if len(real_images)==len(ideal_polygons):
         combo_images = []
 
         for real, ideal in zip(real_images, ideal_polygons):
             combo_img = create_combined_image(real_img=real, pol=ideal, h=h, w=w)
             if combo_img is not None:
-                combo_images.append(cv2.resize(combo_img, gif_size))
+                combo_images.append(cv2.resize(combo_img, img_size))
+        return combo_images
 
-    kwargs = {'duration':10, 'fps':2}
+def save_gif_with_imageio(savepath:str, combo_images:str, duration = 10, fps = 2):
+    """Сохраняем гифку"""
+
+    kwargs = {'duration':duration, 'fps':fps}
     imageio.mimsave(uri=savepath, ims=combo_images, format='GIF', **kwargs)
 
 def create_video_from_real_and_ideal(real_images:List, ideal_polygons:List, savepath:str):
