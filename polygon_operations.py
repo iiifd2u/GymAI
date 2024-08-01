@@ -45,6 +45,7 @@ def get_IOU(pol1 :Polygon, pol2 :Polygon):
     pol_i = pol1.intersection(pol2)  # .geoms[0] - может быть массив геометрий
     if isinstance(pol_i, MultiPolygon):
         pol_i = pol_i.geoms[0]
+    print("poli = ", pol_i)
     pol_u = pol1.union(pol2)  # .geoms[0] - может быть массив геометрий
     if isinstance(pol_u, MultiPolygon):
         pol_u = pol_u.geoms[0]
@@ -61,7 +62,22 @@ def draw_polygon(pol :Polygon, h=700, w = 300):
     plt.imshow(image)
     plt.show()
 
-def create_combined_image(real_img :np.ndarray, pol :Polygon, h=700, w = 300)->np.ndarray:
+def draw_many_polygons(polygons:List[Polygon], h=700, w=300):
+
+    n = len(polygons)
+    fig, ax = plt.subplots(n)
+    for i in range(n):
+        hh, ww = polygons[i].exterior.xy
+        hs, ws, he, we = polygons[i].bounds
+        image = np.zeros(shape=(h, w, 3), dtype=np.uint8)
+        pts = np.vstack([ww - ws * np.ones(len(ww)), hh - hs * np.ones(len(hh))]).T
+        cv2.fillPoly(image, pts=np.int32([pts]), color=(255, 0, 0))
+        ax[i].imshow(image)
+    ax[0].set_xlabel("ideal")
+    ax[1].set_xlabel("real")
+    plt.show()
+
+def create_combined_image(real_img :np.ndarray, pol_ideal :Polygon, h=700, w = 300)->np.ndarray:
     """Передать реальное изображение и другой полигон, посмотреть как он ложиться на силуэт"""
 
     result = predict_on_image(model, real_img)  # рамка, маска(контур объекта), _, вероятность, размер изображения
@@ -72,9 +88,9 @@ def create_combined_image(real_img :np.ndarray, pol :Polygon, h=700, w = 300)->n
         mask_real = np.vstack([mask_real[:, 0]- box[0], mask_real[:, 1]- box[1]]).T
         # pol_real = Polygon(mask_real.tolist())
 
-        hs, ws, he, we = pol.bounds
+        hs, ws, he, we = pol_ideal.bounds
         hr, wr = real_img.shape[:2]
-        y, x = pol.exterior.xy
+        y, x = pol_ideal.exterior.xy
 
         # делим размеры коробки на размеры полигональной маски
         scale_h = int(box[3] - box[1] ) / h
@@ -102,6 +118,10 @@ def create_combined_image(real_img :np.ndarray, pol :Polygon, h=700, w = 300)->n
                                         value=(0, 0, 0)).astype(np.uint8)
         masked_img_real = cv2.copyMakeBorder(mask_img_real, top, bottom, left, right, cv2.BORDER_CONSTANT,
                                         value=(0, 0, 0)).astype(np.uint8)
+        # plt.imshow(masked_img)
+        # plt.show()
+        # plt.imshow(masked_img_real) # вот это надо добавить
+        # plt.show()
 
         # image = cv2.cvtColor(real_img, cv2.COLOR_BGR2RGB).astype(np.uint8)
         image = real_img.astype(np.uint8)
@@ -110,9 +130,9 @@ def create_combined_image(real_img :np.ndarray, pol :Polygon, h=700, w = 300)->n
 
 
         ################### КУСОК ДЛЯ ПОСТРОЕНИЯ ПОЛИГОНА ###########################
-
         mask_cropped = np.vstack(
-            [mask[:, 1] - box[1], mask[:, 0] - box[0]]).T  # H, W координаты начинают считататься от нижнего угла рамки,
+            [mask_real[:, 1] - box[1], mask_real[:, 0] - box[0]]).T  # H, W координаты начинают считататься от нижнего угла рамки,
+
         polygon = Polygon(mask_cropped.tolist())
         bounds = polygon.bounds
         h_cur, w_cur = (bounds[2] - bounds[0], bounds[3] - bounds[1])
@@ -123,12 +143,13 @@ def create_combined_image(real_img :np.ndarray, pol :Polygon, h=700, w = 300)->n
 
         # print(f"Коэффициенты масштабирования w: {scale_w} | h:{scale_h}")
 
-        pol_ideal = affinity.scale(polygon, xfact=scale_h, yfact=scale_w)
-        print("pol area =", pol.area)
-        print("pol ideal =", pol_ideal.area)
+        pol_real= affinity.scale(polygon, xfact=scale_h, yfact=scale_w)
+        print("pol area =", pol_ideal.area)
+        print("pol ideal =", pol_real.area)
 
 
-        iou = get_IOU(pol, pol_ideal)
+        iou = get_IOU(pol_ideal, pol_real)
+        draw_many_polygons([pol_ideal, pol_real])
         print(f"iou = {iou}")
         return image_combined
 
@@ -145,7 +166,7 @@ def create_combined_images(real_images:List, ideal_polygons:List, img_size:Tuple
         combo_images = []
 
         for real, ideal in zip(real_images, ideal_polygons):
-            combo_img = create_combined_image(real_img=real, pol=ideal, h=h, w=w)
+            combo_img = create_combined_image(real_img=real, pol_ideal=ideal, h=h, w=w)
             if combo_img is not None:
                 combo_images.append(cv2.resize(combo_img, img_size))
         return combo_images
