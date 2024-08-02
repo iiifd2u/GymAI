@@ -93,8 +93,8 @@ def create_combined_image(real_img :np.ndarray, pol_ideal :Polygon, h=700, w = 3
         y, x = pol_ideal.exterior.xy
 
         # делим размеры коробки на размеры полигональной маски
-        scale_h = int(box[3] - box[1] ) / h
-        scale_w = int(box[2] - box[0] ) / w
+        scale_h = int(box[3] - box[1]) / h
+        scale_w = int(box[2] - box[0]) / w
 
         x_normalised = (x-ws*np.ones(len(x)))*scale_w
         y_normalised = (y - hs * np.ones(len(y)))*scale_h
@@ -127,7 +127,6 @@ def create_combined_image(real_img :np.ndarray, pol_ideal :Polygon, h=700, w = 3
         image = real_img.astype(np.uint8)
         image_red_green = cv2.addWeighted(masked_img, 1, masked_img_real, 1, 0)
         image_combined = cv2.addWeighted(image, 1 - alpha, image_red_green, alpha, 0)
-
 
         ################### КУСОК ДЛЯ ПОСТРОЕНИЯ ПОЛИГОНА ###########################
         mask_cropped = np.vstack(
@@ -248,6 +247,7 @@ def create_polygon(img :np.ndarray, h = 700, w = 300 )->Optional[Polygon]:
 
 def average_polygon(pol_1:Polygon, pol_2:Polygon)->Polygon:
     """Заглушка"""
+    # TODO: Cделать нормальный средний полигон
     return pol_1.intersection(pol_2)
 
 def numpy_to_polygons(frames:np.ndarray)->List[Polygon]:
