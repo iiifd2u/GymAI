@@ -1,6 +1,7 @@
 import os
 import cv2
 import pickle
+import time
 from typing import List, Tuple, Dict, Union, Optional
 import numpy as np
 import pickle
@@ -17,11 +18,27 @@ from video_operations import get_video_duration
 class Motion():
 
     def __init__(self, name,
-                 frames,
-                 frame_size = (700, 300)):
+                 frames_count,
+                 frame_size = (700, 300),
+                 prefix = "polygons"):
         self.name = name
-        self.frames = frames
+        self.frames_count = frames_count
         self.frame_size = frame_size
+        self.frames = [] # сырые изображения
+        self.polygons = [] # сырые полигоны
+        self.savename  = f"{name}_{frames_count}_{time.time()}"
+        self.prefix = prefix # Для сохранения
+
+    def self_save(self, **kwargs):
+        """Сохраняет в новый или дописывает в старый"""
+        picklename = os.path.join(self.prefix, self.savename)
+        if os.path.exists(picklename):
+            with open(picklename, "rb") as f:
+                current  = pickle.load(f)
+                kwargs.update(current)
+        with open(picklename, "wb") as f:
+            pickle.dump(kwargs, f)
+
 
     def train(self,
               data:Union[List[str], str],
@@ -41,15 +58,18 @@ class Motion():
             cropped_video = self.__crop_video_by_nn(file, st_time=st_time, end_time=end_time)
             print(cropped_video)
             # cropped_video = file
-            frames = self.split_video_to_fixed_frames(cropped_video, self.frames)
+            frames = self.split_video_to_fixed_frames(cropped_video, self.frames_count)
             print(len(frames))
             print(frames.shape)
 
-            for frame in frames:
-                plt.imshow(frame)
-                plt.show()
+            # for frame in frames:
+            #     plt.imshow(frame)
+            #     plt.show()
 
-            np.save(os.path.join("numpies", f"frames_from_video_{name}.npy"), frames)
+            # np.save(os.path.join("numpies", f"frames_from_video_{name}.npy"), frames)
+            self.self_save(frames = frames,
+                           name = self.name,
+                           timestamps = timestamps_all)
 
 
         return timestamps_all
@@ -169,11 +189,11 @@ class Motion():
 if __name__ == '__main__':
 
     name = "front_flip"
-    flip = Motion(name, frames=30) # Создаём класс для тренировки сальто
-    # videopath = [r"data\loaded_videos\male\Floor\Front Flip\frontflip_tutorial.mp4"]
-    #
-    # flip.train(data=videopath, name=name, cropped_st_end=[(24, 26)])
+    flip = Motion(name, frames_count=20) # Создаём класс для тренировки сальто
+    videopath = [r"data\loaded_videos\male\Floor\Front Flip\frontflip_tutorial.mp4"]
 
+    flip.train(data=videopath, name=name, cropped_st_end=[(24, 26)])
+    exit()
     # это полигоны из видео
     # image = cv2.imread("data/my_videos/screenshot.jpg")
 
