@@ -214,7 +214,7 @@ def create_video_from_real_and_ideal(real_images:List, ideal_polygons:List, save
     else:
         print("Ошибка, массивы различной длины!")
 
-def create_polygon(img :np.ndarray, h = 700, w = 300 )->Optional[Polygon]:
+def create_polygon(img :np.ndarray, h:int, w:int )->Optional[Polygon]:
 
     result = predict_on_image(model, img) # рамка, маска(контур объекта), _, вероятность, размер изображения
     if result is not None:
@@ -250,10 +250,10 @@ def average_polygon(pol_1:Polygon, pol_2:Polygon)->Polygon:
     # TODO: Cделать нормальный средний полигон
     return pol_1.intersection(pol_2)
 
-def numpy_to_polygons(frames:np.ndarray)->List[Polygon]:
+def numpy_to_polygons(frames:np.ndarray, w:int, h:int)->List[Polygon]:
     """Переводит все кадры в полигон, достраивая до необходимого количества
     искуственные полигоны"""
-    polygons = [create_polygon(f) for f in frames]
+    polygons = [create_polygon(f, w=w, h=h) for f in frames]
     #Первым становиться первый нормальный
     for p in polygons:
         if p is None:

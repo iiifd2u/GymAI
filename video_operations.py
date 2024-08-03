@@ -9,7 +9,7 @@ import shlex
 
 
 """
-Операции с видео через ffmpeg
+Операции с видео через ffmpeg и opencv
 """
 
 re_fps = re.compile(r'\d+ fps')
@@ -37,6 +37,36 @@ def take_screenshot(videopath:str, second:int):
     print("size =", re.search(re_size, str(err)).group())
     img = np.frombuffer(out, dtype=np.int8)
     return img
+
+def split_video_to_fixed_frames(videopath, frames_count)->np.ndarray:
+
+    cap = cv2.VideoCapture(videopath)
+    if not cap.isOpened():
+        print("Closed!")
+    video_duration = get_video_duration(videopath)
+    step_points = np.linspace(0, video_duration, frames_count+1)
+    print(step_points)
+    print(len(step_points))
+    step_idx = 0
+    frames = []
+
+    while(cap.isOpened()):
+        success, frame = cap.read()
+
+        if success:
+            t = cap.get(cv2.CAP_PROP_POS_MSEC)/1000 # В секундах
+            if t>=step_points[step_idx]:
+                step_idx+=1
+                frames.append(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
+                if step_idx > frames_count:
+                    break
+        else:
+            break
+
+    frames = np.array(frames)
+    cap.release()
+    cv2.destroyAllWindows()
+    return frames
 
 if __name__ == '__main__':
 
