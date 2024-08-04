@@ -11,6 +11,7 @@ from scipy.sparse import coo_matrix
 from typing import Tuple, List, Optional
 
 
+
 weights = os.path.join("models", "yolo_models","segmentation", "yolov8m-seg.pt")
 model = YOLO(weights)
 w, h = (300, 700)
@@ -76,6 +77,10 @@ def draw_many_polygons(polygons:List[Polygon], h=700, w=300):
     ax[0].set_xlabel("ideal")
     ax[1].set_xlabel("real")
     plt.show()
+
+def create_combined_image2(master, trial, size:Tuple)->np.ndarray:
+    pass
+
 
 def create_combined_image(real_img :np.ndarray, pol_ideal :Polygon, h=700, w = 300)->np.ndarray:
     """Передать реальное изображение и другой полигон, посмотреть как он ложиться на силуэт"""
@@ -214,6 +219,28 @@ def create_video_from_real_and_ideal(real_images:List, ideal_polygons:List, save
     else:
         print("Ошибка, массивы различной длины!")
 
+
+def get_prediction(img:np.ndarray, h:int, w:int)->Optional[Tuple]:
+    """(рамки, маски, полигоны)"""
+    result = predict_on_image(model, img)  # рамка, маска(контур объекта), _, вероятность, размер изображения
+    if result is not None:
+
+        box, mask, _, prob, orig_shape = result
+        mask_cropped = np.vstack([mask[:, 1] - box[1], mask[:, 0] - box[
+            0]]).T  # H, W координаты начинают считататься от нижнего угла рамки,
+        polygon = Polygon(mask_cropped.tolist())
+        bounds = polygon.bounds
+        h_cur, w_cur = (bounds[2] - bounds[0], bounds[3] - bounds[1])
+
+        scale_h = (h) / h_cur  # коэффициент рескейла
+        scale_w = (w) / w_cur
+
+        polygon = affinity.scale(polygon, xfact=scale_h, yfact=scale_w)
+
+        return (box, mask, polygon)
+    return (None, None, None)
+
+
 def create_polygon(img :np.ndarray, h:int, w:int )->Optional[Polygon]:
 
     result = predict_on_image(model, img) # рамка, маска(контур объекта), _, вероятность, размер изображения
@@ -231,17 +258,17 @@ def create_polygon(img :np.ndarray, h:int, w:int )->Optional[Polygon]:
         # print(f"Коэффициенты масштабирования w: {scale_w} | h:{scale_h}")
 
         polygon  =affinity.scale(polygon, xfact=scale_h, yfact=scale_w)
-        bounds = polygon.bounds
-        h_cur, w_cur = (bounds[2] - bounds[0], bounds[3] - bounds[1])
-        # print(f"polygon after w x h = {w_cur} x {h_cur}")
-
-        # # перемастабированная маска в виде координат границы
-        # mask_cropped = np.vstack([list(map(lambda el: math.floor(el), mask_cropped[:, 0] * scale_y)),
-        #                           list(map(lambda el: math.floor(el), mask_cropped[:, 1] * scale_x))]).T
+        # bounds = polygon.bounds
+        # h_cur, w_cur = (bounds[2] - bounds[0], bounds[3] - bounds[1])
+        # # print(f"polygon after w x h = {w_cur} x {h_cur}")
         #
-        # print(f"Размеры маски после: H {mask_cropped[:, 0].max()} | W {mask_cropped[:, 1].max()}")
-        #
-        # polygon = Polygon(mask_cropped.tolist())
+        # # # перемастабированная маска в виде координат границы
+        # # mask_cropped = np.vstack([list(map(lambda el: math.floor(el), mask_cropped[:, 0] * scale_y)),
+        # #                           list(map(lambda el: math.floor(el), mask_cropped[:, 1] * scale_x))]).T
+        # #
+        # # print(f"Размеры маски после: H {mask_cropped[:, 0].max()} | W {mask_cropped[:, 1].max()}")
+        # #
+        # # polygon = Polygon(mask_cropped.tolist())
         return polygon
     return None
 

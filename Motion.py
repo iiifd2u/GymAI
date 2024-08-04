@@ -13,27 +13,35 @@ from polygon_operations import create_polygon, \
     draw_polygon_on_real_img, \
     create_video_from_real_and_ideal, \
     save_gif_with_imageio, numpy_to_polygons, \
-    create_combined_images
+    create_combined_images, create_combined_image2, get_prediction
 
 from video_operations import get_video_duration, split_video_to_fixed_frames
 
 class Motion():
 
-    def __init__(self, name,
+    def __init__(self, name, type:str,
                  prefix = "polygons"):
-        """Инициализирует тренировочный блок"""
+        """
+        Инициализирует тренировочный блок
+        :param name: Название элемента
+        :param type: Тип: пробный или эталонный ["trial", "master"]
+        :param prefix: Папка для сохранения
+        """
         self.name = name
+        self.type = type
         self.videotemppath = None #фрагмент, по которому распознаём элемент
         self.frames = [] # сырые изображения
+        self.boxes = []
+        self.masks = []
         self.polygons = [] # полигоны заданной рамки
-        self.savename  = f"{name}_untrained_dt"+datetime.now().strftime("%H_%M_%S")
+        self.savename  = f"{type}_{name}_untrained_dt"+datetime.now().strftime("%H_%M_%S")
         self.prefix = prefix # Для сохранения
         self.timestamps = []
 
 
     def self_save(self, **kwargs):
         """Сохраняет в новый или дописывает в старый"""
-        picklename = os.path.join(self.__prefix, self.savename)
+        picklename = os.path.join(self.prefix, self.savename)
         if os.path.exists(picklename):
             with open(picklename, "rb") as f:
                 current  = pickle.load(f)
@@ -45,11 +53,14 @@ class Motion():
         if os.path.exists(picklename):
             with open(picklename, "rb") as f:
                 current  = pickle.load(f)
-        self.frames = current["frames"]
+        self.type = current['type']
         self.name = current["name"]
         self.videotemppath = current["temppath"]
         self.videoduration = current["duration"]
         self.timestamps = current["timestamps"]
+        self.frames = current["frames"]
+        self.boxes = current["boxes"]
+        self.masks = current["masks"]
         self.polygons = current["polygons"]
         self.polygon_size = current["poly_size"]
         self.savename = picklename
@@ -78,6 +89,17 @@ class Motion():
         except Exception as e:
             print("Ошибка при создании полигонов:", e)
 
+    def __get_predictions(self):
+        try:
+            predictions = [get_prediction(f, h= self.polygon_size[0], w=self.polygon_size[1]) for f in self.frames]
+            self.boxes = [el[0] for el in predictions]
+            self.masks= [el[1] for el in predictions]
+            self.polygons = [el[2] for el in predictions]
+
+            print(f"Количество полигонов: {len(self.polygons)}")
+        except Exception as e:
+            print("Ошибка при создании полигонов:", e)
+
     def train(self, videopath:str,  frames_count:int, polygon_size = (700, 300),**kwargs):
 
         """
@@ -95,15 +117,18 @@ class Motion():
         self.__cropp_video(start, end)
         self.videoduration = get_video_duration(self.videotemppath)
         self.__get_frames()
-        self.__get_polygons()
+        # self.__get_polygons()
+        self.__get_predictions()
+        self.savename = f"{self.type}_{self.name}_fr{frames_count}_dt" + datetime.now().strftime("%H_%M_%S")
 
-        self.savename = f"{name}_fr{frames_count}_dt" + datetime.now().strftime("%H_%M_%S")
-
-        self.self_save(frames = self.frames,
+        self.self_save(type = self.type,
                        name = self.name,
                        temppath = self.videotemppath,
                        duration = self.videoduration,
                        timestamps = self.timestamps,
+                       frames=self.frames,
+                       boxes = self.boxes,
+                       masks = self.masks,
                        polygons = self.polygons,
                        poly_size = self.polygon_size)
 
@@ -218,14 +243,14 @@ class Motion():
 if __name__ == '__main__':
 
     name = "front_flip"
-    flip = Motion(name) # Создаём класс для тренировки сальто
+    masterflip = Motion(name, type="master") # Создаём класс для тренировки сальто
 
 
-    ################# ЭТАП 1 - обучение эталонных данных
+    ################ ЭТАП 1 - обучение эталонных данных
     # videopath = r"data\loaded_videos\male\Floor\Front Flip\frontflip_tutorial.mp4"
     # polygon_size = (700, 300)
     #
-    # flip.train(videopath=videopath,
+    # masterflip.train(videopath=videopath,
     #            frames_count=20,
     #            polygon_size=polygon_size,
     #            start=24, end=26)
@@ -233,14 +258,22 @@ if __name__ == '__main__':
     #
 
     ########################## ЭТАП 2 - загрузка готовых данных
-    loadpath = r'polygons\front_flip_fr20_dt18_00_38'
-    flip.load(loadpath)
-    for p, f in zip(flip.polygons, flip.frames):
-        f = f/255.
-        plt.imshow(f)
-        plt.show()
-        draw_polygon(p)
+    loadpath = r'polygons\master_front_flip_fr20_dt23_31_50'
+    masterflip.load(loadpath)
+    print(len(masterflip.masks))
+    print(masterflip.boxes)
+    # for p, f in zip(masterflip.polygons, masterflip.frames):
+    #     f = f/255.
+    #     plt.imshow(f)
+    #     plt.show()
+    #     draw_polygon(p)
     exit()
+
+
+    ####################### ЭТАП 3 #########################
+
+    combined_images = create_combined_images(real_images=frames_real, ideal_polygons=polygons_ideal,
+                                             img_size=(320, 480))
 
 
     # это полигоны из видео
