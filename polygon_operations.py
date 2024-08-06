@@ -78,9 +78,6 @@ def draw_many_polygons(polygons:List[Polygon], h=700, w=300):
     ax[1].set_xlabel("real")
     plt.show()
 
-def create_combined_image2(master, trial, size:Tuple)->np.ndarray:
-    pass
-
 
 def create_combined_image(real_img :np.ndarray, pol_ideal :Polygon, h=700, w = 300)->np.ndarray:
     """Передать реальное изображение и другой полигон, посмотреть как он ложиться на силуэт"""
