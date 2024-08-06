@@ -13,11 +13,11 @@ from polygon_operations import create_polygon, \
     draw_polygon_on_real_img, \
     create_video_from_real_and_ideal, \
     save_gif_with_imageio, numpy_to_polygons, \
-    create_combined_images, create_combined_image2, get_prediction
+    create_combined_images,  get_prediction
 
 from video_operations import get_video_duration, split_video_to_fixed_frames
 
-class Motion():
+class Motion:
 
     def __init__(self, name, type:str,
                  prefix = "polygons"):
@@ -28,6 +28,7 @@ class Motion():
         :param prefix: Папка для сохранения
         """
         self.name = name
+        self.uuid = str(uuid.uuid4())
         self.type = type
         self.videotemppath = None #фрагмент, по которому распознаём элемент
         self.frames = [] # сырые изображения
@@ -37,6 +38,7 @@ class Motion():
         self.savename  = f"{type}_{name}_untrained_dt"+datetime.now().strftime("%H_%M_%S")
         self.prefix = prefix # Для сохранения
         self.timestamps = []
+
 
 
     def self_save(self, **kwargs):
@@ -183,7 +185,7 @@ class Motion():
         print(size)
         codec = cv2.VideoWriter_fourcc(*"mp4v")
         fps = cap.get(cv2.CAP_PROP_FPS)
-        output_video = os.path.join(output_folder, name+f"_cropped_{str(uuid.uuid4())}."+ext)
+        output_video = os.path.join(output_folder, name+f"_cropped_{self.uuid}."+ext)
         result = cv2.VideoWriter(output_video, codec, fps, size)
 
         start =  st_time*1000
@@ -239,6 +241,83 @@ class Motion():
     #     with open(loadpath, "rb") as f:
     #         self.polygons = pickle.load(f)
     #     return self.polygons
+    def __iter__(self):
+        yield self.frames
+
+
+def compare_with(master:Motion, trial:Motion):
+    """Сравнивает два объекта Motion и возвращает кадр trial с наложенным polygon master"""
+
+    for m in master:
+        print(m)
+    # alpha = 0.3
+    #
+    # mask_trial = np.vstack([trial.masks[:, 0] - box[0], mask_real[:, 1] - box[1]]).T
+    # # pol_real = Polygon(mask_real.tolist())
+    #
+    # hs, ws, he, we = pol_ideal.bounds
+    # hr, wr = real_img.shape[:2]
+    # y, x = pol_ideal.exterior.xy
+    #
+    # # делим размеры коробки на размеры полигональной маски
+    # scale_h = int(box[3] - box[1]) / h
+    # scale_w = int(box[2] - box[0]) / w
+    #
+    # x_normalised = (x - ws * np.ones(len(x))) * scale_w
+    # y_normalised = (y - hs * np.ones(len(y))) * scale_h
+    #
+    # x_normalised = x_normalised.astype(np.int32)
+    # y_normalised = y_normalised.astype(np.int32)
+    #
+    # mask = np.vstack([x_normalised, y_normalised]).T
+    # mask_img = np.zeros((int(box[3] - box[1]), int(box[2] - box[0]), 3))
+    # mask_img_real = np.zeros((int(box[3] - box[1]), int(box[2] - box[0]), 3))
+    #
+    # cv2.fillPoly(mask_img, pts=np.int32([mask]), color=(255, 0, 0))
+    # cv2.fillPoly(mask_img_real, pts=np.int32([mask_real]), color=(0, 255, 0))
+    #
+    # left = box[0]
+    # bottom = hr - box[3]
+    # right = wr - box[2]
+    # top = box[1]
+    #
+    # masked_img = cv2.copyMakeBorder(mask_img, top, bottom, left, right, cv2.BORDER_CONSTANT,
+    #                                 value=(0, 0, 0)).astype(np.uint8)
+    # masked_img_real = cv2.copyMakeBorder(mask_img_real, top, bottom, left, right, cv2.BORDER_CONSTANT,
+    #                                      value=(0, 0, 0)).astype(np.uint8)
+    # # plt.imshow(masked_img)
+    # # plt.show()
+    # # plt.imshow(masked_img_real) # вот это надо добавить
+    # # plt.show()
+    #
+    # # image = cv2.cvtColor(real_img, cv2.COLOR_BGR2RGB).astype(np.uint8)
+    # image = real_img.astype(np.uint8)
+    # image_red_green = cv2.addWeighted(masked_img, 1, masked_img_real, 1, 0)
+    # image_combined = cv2.addWeighted(image, 1 - alpha, image_red_green, alpha, 0)
+    #
+    # ################### КУСОК ДЛЯ ПОСТРОЕНИЯ ПОЛИГОНА ###########################
+    # mask_cropped = np.vstack(
+    #     [mask_real[:, 1] - box[1],
+    #      mask_real[:, 0] - box[0]]).T  # H, W координаты начинают считататься от нижнего угла рамки,
+    #
+    # polygon = Polygon(mask_cropped.tolist())
+    # bounds = polygon.bounds
+    # h_cur, w_cur = (bounds[2] - bounds[0], bounds[3] - bounds[1])
+    # # print(f"polygon before w x h = {w_cur} x {h_cur}")
+    #
+    # scale_h = (h) / h_cur  # коэффициент рескейла
+    # scale_w = (w) / w_cur
+    #
+    # # print(f"Коэффициенты масштабирования w: {scale_w} | h:{scale_h}")
+    #
+    # pol_real = affinity.scale(polygon, xfact=scale_h, yfact=scale_w)
+    # print("pol area =", pol_ideal.area)
+    # print("pol ideal =", pol_real.area)
+    #
+    # iou = get_IOU(pol_ideal, pol_real)
+    # draw_many_polygons([pol_ideal, pol_real])
+    # print(f"iou = {iou}")
+    # return image_combined
 
 if __name__ == '__main__':
 
@@ -255,10 +334,10 @@ if __name__ == '__main__':
     #            polygon_size=polygon_size,
     #            start=24, end=26)
     # exit()
-    #
+
 
     ########################## ЭТАП 2 - загрузка готовых данных
-    loadpath = r'polygons\master_front_flip_fr20_dt23_31_50'
+    loadpath = r'polygons\master_front_flip_fr20_dt22_59_09'
     masterflip.load(loadpath)
     print(len(masterflip.masks))
     print(masterflip.boxes)
@@ -267,10 +346,14 @@ if __name__ == '__main__':
     #     plt.imshow(f)
     #     plt.show()
     #     draw_polygon(p)
-    exit()
+    # exit()
 
 
     ####################### ЭТАП 3 #########################
+
+    compare_with(master=masterflip, trial=masterflip)
+
+    exit()
 
     combined_images = create_combined_images(real_images=frames_real, ideal_polygons=polygons_ideal,
                                              img_size=(320, 480))
