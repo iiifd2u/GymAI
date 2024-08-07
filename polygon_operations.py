@@ -54,14 +54,16 @@ def get_IOU(pol1 :Polygon, pol2 :Polygon):
     return pol_i.area /pol_u.area
 
 def draw_polygon(pol :Polygon, h=700, w = 300):
-
-    hh, ww = pol.exterior.xy
-    hs, ws, he, we = pol.bounds
-    image = np.zeros(shape=(h, w, 3), dtype = np.uint8)
-    pts = np.vstack([ww-ws*np.ones(len(ww)), hh-hs*np.ones(len(hh))]).T
-    cv2.fillPoly(image, pts=np.int32([pts]), color=(255, 0, 0))
-    plt.imshow(image)
-    plt.show()
+    try:
+        hh, ww = pol.exterior.xy
+        hs, ws, he, we = pol.bounds
+        image = np.zeros(shape=(h, w, 3), dtype = np.uint8)
+        pts = np.vstack([ww-ws*np.ones(len(ww)), hh-hs*np.ones(len(hh))]).T
+        cv2.fillPoly(image, pts=np.int32([pts]), color=(255, 0, 0))
+        plt.imshow(image)
+        plt.show()
+    except Exception as e:
+        print(f"Ошибка при отрисовке полигона: {e}")
 
 def draw_many_polygons(polygons:List[Polygon], h=700, w=300):
 
