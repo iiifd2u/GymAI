@@ -382,7 +382,12 @@ if __name__ == '__main__':
     ####################### ЭТАП 5 #########################
     """Сравнение мастера и пробного"""
 
+    gif_frames = []
+    for frame in compare_with(master=masterflip, trial=trialflip):
+        if frame is not None:
+            gif_frames.append(frame)
 
+    save_gif_with_imageio(savepath=os.path.join("output_videos", "gifs", "example_5.gif"), combo_images=gif_frames)
 
     exit()
 
