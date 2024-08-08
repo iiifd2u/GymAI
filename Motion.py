@@ -330,6 +330,52 @@ def compare_with(master:Motion, trial:Motion, h=700, w=300):
 
 if __name__ == '__main__':
 
+    polygon_size = (700, 300)
+
+    name = "cartwheel"
+    masterwheel = Motion(name, type="master")
+    videopath = r"data\my_videos\wheel_A_I.MOV"
+    # masterwheel.train(videopath=videopath,
+    #            frames_count=20,
+    #            polygon_size=polygon_size,
+    #            start=23, end=28)
+
+    loadpath = r"polygons\master_cartwheel_fr20_dt21_10_57"
+
+    masterwheel.load(loadpath)
+
+    # for p, f in zip(masterwheel.polygons, masterwheel.frames):
+    #     f = f/255.
+    #     plt.imshow(f)
+    #     plt.show()
+    #     draw_polygon(p)
+    # exit()
+
+    trialwheel= Motion(name, type="trial")  # Создаём класс для тренировки сальто
+    # polygon_size = (700, 300)
+    videopath = r"data\my_videos\cropped_wheel.MOV"
+
+    # trialwheel.train(videopath=videopath,
+    #            frames_count=20,
+    #            polygon_size=polygon_size,
+    #            start=1, end=5)
+    # exit()
+    loadpath = r'polygons\trial_cartwheel_fr20_dt21_33_13'
+    trialwheel.load(loadpath)
+
+    # for p, f in zip(trialwheel.polygons, trialwheel.frames):
+    #     f = f/255.
+    #     plt.imshow(f)
+    #     plt.show()
+    #     draw_polygon(p)
+    # exit()
+
+    #'ffmpeg -i wheel_A_I_cropped_e79585f1-00d0-4a00-be3d-547181ecf07f.MOV -vf "crop=out_w:out_h:x:y" cropped_wheel.MOV'
+    #""
+
+    ########### САЛЬТО ######################
+
+
     name = "front_flip"
     masterflip = Motion(name, type="master") # Создаём класс для тренировки сальто
 
@@ -378,6 +424,13 @@ if __name__ == '__main__':
     #     draw_polygon(p)
     # exit()
 
+    gif_frames = []
+    for frame in compare_with(master=masterwheel, trial=trialwheel):
+        if frame is not None:
+            gif_frames.append(frame)
+
+    save_gif_with_imageio(savepath=os.path.join("output_videos", "gifs", "cartwheel.gif"), combo_images=gif_frames)
+
 
     ####################### ЭТАП 5 #########################
     """Сравнение мастера и пробного"""
@@ -387,51 +440,11 @@ if __name__ == '__main__':
         if frame is not None:
             gif_frames.append(frame)
 
-    save_gif_with_imageio(savepath=os.path.join("output_videos", "gifs", "example_5.gif"), combo_images=gif_frames)
+    save_gif_with_imageio(savepath=os.path.join("output_videos", "gifs", "example.gif"), combo_images=gif_frames)
 
     exit()
 
-    # combined_images = create_combined_images(real_images=frames_real, ideal_polygons=polygons_ideal,
-    #                                          img_size=(320, 480))
 
-
-    # это полигоны из видео
-    # image = cv2.imread("data/my_videos/screenshot.jpg")
-
-
-    ##
-    # polygons_ideal= flip.create_classification_polygons_from_numpy(os.path.join("numpies", f"frames_from_video_{name}.npy"))
-    # savepath = os.path.join("polygons", "somePolygons")
-    # flip.save_polygons(savepath)
-    # exit()
-
-
-    ###
-    loadpath = os.path.join("polygons", "somePolygons")
-    polygons_ideal = flip.load_polygons(loadpath)
-    print("len frames ideal =", len(polygons_ideal))
-    # for polygon in polygons_ideal:
-    #     draw_polygon(polygon)
-    # exit()
-    frames_real = Motion.split_video_to_fixed_frames(os.path.join("data", "my_videos", "CUTTED_9814.MOV"), count_frames=20)
-    print("len frames real =", len(frames_real))
-    # exit()
-
-    # for f, p in zip(frames_real, polygons_ideal):
-    #     draw_polygon_on_real_img(f, p)
-        # draw_polygon(p)
-    print(f"Длины массивов: реальный = {len(frames_real)}, идеальный = {len(polygons_ideal)}")
-    # Гифка
-
-    # create_video_from_real_and_ideal(real_images=frames_real,
-    #                                ideal_polygons=polygons_ideal,
-    #                                savepath="output_videos")
-    combined_images = create_combined_images(real_images=frames_real, ideal_polygons=polygons_ideal, img_size=(320, 480))
-    save_gif_with_imageio(savepath=os.path.join("output_videos", "gifs", "example_3.gif"), combo_images=combined_images)
-    # save_gif_with_imageio(real_images=frames_real,
-    #                       ideal_polygons=polygons_ideal,
-    #                       savepath=os.path.join("output_videos", "gifs", "example_2.gif"),
-    #                       gif_size=(320, 480))
 
 
 
