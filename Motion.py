@@ -382,10 +382,7 @@ if __name__ == '__main__':
     ####################### ЭТАП 5 #########################
     """Сравнение мастера и пробного"""
 
-    for frame in compare_with(master=masterflip, trial=trialflip):
-        if frame is not None:
-            plt.imshow(frame)
-            plt.show()
+
 
     exit()
 
