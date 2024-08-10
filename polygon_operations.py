@@ -17,7 +17,7 @@ model = YOLO(weights)
 w, h = (300, 700)
 
 def predict_on_image(model, img, conf=0.5):
-    """Предсказывает для первого входящего Person всю информацию"""
+    """Предсказывает для самого большого по площади Person всю информацию"""
 
     result = model.predict(img, conf=conf, save=False, device = "cpu")[0]
     # print(f"Result: {result}")
@@ -29,13 +29,20 @@ def predict_on_image(model, img, conf=0.5):
 
         # masks = result.masks.data
 
+        m_valid, p_valid, b_valid, sizes = [], [], [], []
         predicted_classes = [result.names[c] for c in cls]
         for i, c in enumerate(predicted_classes):
             if c=="person":
                 mask, prob, box = masks[i], probs[i], boxes[i]
                 box = [int(el) for el in box]
+                m_valid.append(mask)
+                p_valid.append(prob),
+                b_valid.append(box)
+                sizes.append((box[2]-box[0])*(box[3]-box[1]))
+                print("box = ", box)
 
-                return box, mask, cls, prob, result.orig_shape
+        am = np.argmax(sizes)
+        return b_valid[am], m_valid[am], cls, p_valid[am], result.orig_shape
     except Exception as e:
         print(e)
         print(traceback.format_exc())
