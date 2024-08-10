@@ -288,7 +288,7 @@ def compare_with(master:Motion, trial:Motion, h=700, w=300):
 
             masked_img = cv2.copyMakeBorder(mask_img, top, bottom, left, right, cv2.BORDER_CONSTANT,
                                             value=(0, 0, 0)).astype(np.uint8)
-            masked_img_real = cv2.copyMakeBorder(mask_img_trial, top, bottom, left, right, cv2.BORDER_CONSTANT,
+            masked_img_trial= cv2.copyMakeBorder(mask_img_trial, top, bottom, left, right, cv2.BORDER_CONSTANT,
                                                  value=(0, 0, 0)).astype(np.uint8)
             # plt.imshow(masked_img)
             # plt.show()
@@ -297,7 +297,8 @@ def compare_with(master:Motion, trial:Motion, h=700, w=300):
 
             # image = cv2.cvtColor(real_img, cv2.COLOR_BGR2RGB).astype(np.uint8)
             image = frame_trial.astype(np.uint8)
-            image_red_green = cv2.addWeighted(masked_img, 1, masked_img_real, 1, 0)
+            image_red_green = cv2.addWeighted(masked_img, 1, masked_img_trial, 1, 0)
+            plt.imshow(image_red_green)
             image_combined = cv2.addWeighted(image, 1 - alpha, image_red_green, alpha, 0)
     #
     # ################### КУСОК ДЛЯ ПОСТРОЕНИЯ ПОЛИГОНА ###########################
@@ -335,13 +336,13 @@ if __name__ == '__main__':
     name = "cartwheel"
     masterwheel = Motion(name, type="master")
     videopath = r"data\my_videos\wheel_A_I.MOV"
-    # masterwheel.train(videopath=videopath,
-    #            frames_count=20,
-    #            polygon_size=polygon_size,
-    #            start=23, end=28)
+    masterwheel.train(videopath=videopath,
+               frames_count=20,
+               polygon_size=polygon_size,
+               start=23.5, end=27.7)
 
-    loadpath = r"polygons\master_cartwheel_fr20_dt21_10_57"
-
+    # loadpath = f"polygons\\master_cartwheel_fr20_dt21_10_57"
+    loadpath = f"polygons\\{masterwheel.savename}"
     masterwheel.load(loadpath)
 
     # for p, f in zip(masterwheel.polygons, masterwheel.frames):
@@ -355,12 +356,13 @@ if __name__ == '__main__':
     # polygon_size = (700, 300)
     videopath = r"data\my_videos\cropped_wheel.MOV"
 
-    # trialwheel.train(videopath=videopath,
-    #            frames_count=20,
-    #            polygon_size=polygon_size,
-    #            start=1, end=5)
+    trialwheel.train(videopath=videopath,
+               frames_count=20,
+               polygon_size=polygon_size,
+               start=0.7, end=4.5)
     # exit()
-    loadpath = r'polygons\trial_cartwheel_fr20_dt21_33_13'
+    # loadpath = r'polygons\trial_cartwheel_fr20_dt21_33_13'
+    loadpath = f'polygons\\{trialwheel.savename}'
     trialwheel.load(loadpath)
 
     # for p, f in zip(trialwheel.polygons, trialwheel.frames):
@@ -369,6 +371,14 @@ if __name__ == '__main__':
     #     plt.show()
     #     draw_polygon(p)
     # exit()
+
+    gif_frames = []
+    for frame in compare_with(master=masterwheel, trial=trialwheel):
+        if frame is not None:
+            gif_frames.append(frame)
+
+    save_gif_with_imageio(savepath=os.path.join("output_videos", "gifs", "example_3.gif"), combo_images=gif_frames)
+    exit()
 
     #'ffmpeg -i wheel_A_I_cropped_e79585f1-00d0-4a00-be3d-547181ecf07f.MOV -vf "crop=out_w:out_h:x:y" cropped_wheel.MOV'
     #""
@@ -412,6 +422,7 @@ if __name__ == '__main__':
     #            frames_count=20,
     #            polygon_size=polygon_size,
     #            start=4.5, end=6)
+    # exit()
 
     ################ ЭТАП 4 - загрузка тренировочных данных
     loadpath = r'polygons\trial_front_flip_fr20_dt00_01_34'
@@ -423,13 +434,6 @@ if __name__ == '__main__':
     #     plt.show()
     #     draw_polygon(p)
     # exit()
-
-    gif_frames = []
-    for frame in compare_with(master=masterwheel, trial=trialwheel):
-        if frame is not None:
-            gif_frames.append(frame)
-
-    save_gif_with_imageio(savepath=os.path.join("output_videos", "gifs", "cartwheel.gif"), combo_images=gif_frames)
 
 
     ####################### ЭТАП 5 #########################
