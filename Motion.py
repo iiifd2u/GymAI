@@ -35,7 +35,7 @@ class Motion:
         self.boxes = []
         self.masks = []
         self.polygons = [] # полигоны заданной рамки
-        self.savename  = f"{type}_{name}_untrained_dt"+datetime.now().strftime("%H_%M_%S")
+        self.savename  = f"{type}_{name}_untrained_dt{datetime.now().strftime('%H_%M_%S')}_{self.uuid}"
         self.prefix = prefix # Для сохранения
         self.timestamps = []
 
@@ -121,7 +121,7 @@ class Motion:
         self.__get_frames()
         # self.__get_polygons()
         self.__get_predictions()
-        self.savename = f"{self.type}_{self.name}_fr{frames_count}_dt" + datetime.now().strftime("%H_%M_%S")
+        self.savename = f"{self.type}_{self.name}_fr{frames_count}_dt{datetime.now().strftime('%H_%M_%S')}_{self.uuid}"
 
         self.self_save(type = self.type,
                        name = self.name,
@@ -185,7 +185,7 @@ class Motion:
         print(size)
         codec = cv2.VideoWriter_fourcc(*"mp4v")
         fps = cap.get(cv2.CAP_PROP_FPS)
-        output_video = os.path.join(output_folder, name+f"_cropped_{self.uuid}."+ext)
+        output_video = os.path.join(output_folder, name+f"_cropped_dt{datetime.now().strftime('%H_%M_%S')}_{self.uuid}{self.uuid}."+ext)
         result = cv2.VideoWriter(output_video, codec, fps, size)
 
         start =  st_time*1000
