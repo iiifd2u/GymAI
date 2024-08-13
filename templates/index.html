@@ -1,11 +1,37 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
+  <head>
+    <meta charset="UTF-8" />
     <title>Title</title>
-</head>
-<body>
-<div>Hello!</div>
-<script src="static/js/index.js"></script>
-</body>
+    <link rel="stylesheet" href="static/css/bootstrap.css">
+  </head>
+  <body>
+    
+
+    
+        <div class="d-flex flex-row justify-content-center">
+            <div class="d-flex flex-row justify-content-center">
+            <!-- Здесь 2 окошка для старта и финиша -->
+                <div class="d-flex flex-column">                    
+                    <img src="..." class="img-thumbnail" alt="старт">
+                    <label for="customRange1" class="form-label">Пример диапазона</label>
+                    <input type="range" class="form-range" id="customRange1">   
+                </div>
+
+                <div class="d-flex flex-column">
+                    <img src="..." class="img-thumbnail" alt="стоп">
+                    <label for="customRange1" class="form-label">Пример диапазона</label>
+                    <input type="range" class="form-range" id="customRange1">
+                </div>
+
+            <!-- Здесь правое окошко с результатом -->
+                <div class="d-flex flex-column">
+
+                </div>
+
+            </div>
+        </div>   
+
+    <script src="static/js/index.js"></script>
+  </body>
 </html>
