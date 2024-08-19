@@ -10,7 +10,13 @@
 
 ## Пример сравнения
 
-<img src="https://github.com/iiifd2u/GymAI/blob/main/output_videos/gifs/example.gif" width="400" /> | <img src="https://github.com/iiifd2u/GymAI/blob/main/output_videos/gifs/cartwheel.gif" width="400" />
+<div align="center">
+  <img src="https://github.com/iiifd2u/GymAI/blob/main/output_videos/gifs/example.gif" width="500" />  
+</div>
+
+<div align="center">
+  <img src="https://github.com/iiifd2u/GymAI/blob/main/output_videos/gifs/cartwheel.gif" width="500" />
+</div>
 
 ## Принцип работы
 
