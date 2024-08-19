@@ -247,7 +247,7 @@ class Motion:
             yield row
 
 
-def compare_with(master:Motion, trial:Motion, h=700, w=300):
+def compare_with(master:Motion, trial:Motion, h=700, w=300)->np.ndarray:
     """Сравнивает два объекта Motion и возвращает кадр trial с наложенным polygon master"""
 
     for m, t in zip(master, trial):
@@ -339,7 +339,7 @@ if __name__ == '__main__':
     masterwheel.train(videopath=videopath,
                frames_count=20,
                polygon_size=polygon_size,
-               start=23.5, end=27.7)
+               start=23.8, end=26.7)
 
     # loadpath = f"polygons\\master_cartwheel_fr20_dt21_10_57"
     loadpath = f"polygons\\{masterwheel.savename}"
@@ -359,7 +359,7 @@ if __name__ == '__main__':
     trialwheel.train(videopath=videopath,
                frames_count=20,
                polygon_size=polygon_size,
-               start=0.7, end=4.5)
+               start=0.7, end=3.5)
     # exit()
     # loadpath = r'polygons\trial_cartwheel_fr20_dt21_33_13'
     loadpath = f'polygons\\{trialwheel.savename}'
@@ -377,8 +377,8 @@ if __name__ == '__main__':
         if frame is not None:
             gif_frames.append(frame)
 
-    save_gif_with_imageio(savepath=os.path.join("output_videos", "gifs", "example_3.gif"), combo_images=gif_frames)
-    exit()
+    save_gif_with_imageio(savepath=os.path.join("output_videos", "gifs", "cartwheel.gif"), combo_images=gif_frames)
+    # exit()
 
     #'ffmpeg -i wheel_A_I_cropped_e79585f1-00d0-4a00-be3d-547181ecf07f.MOV -vf "crop=out_w:out_h:x:y" cropped_wheel.MOV'
     #""

@@ -8,6 +8,7 @@ import subprocess
 import traceback
 import shlex
 import matplotlib.pyplot as plt
+from PIL import Image
 
 
 
@@ -109,6 +110,12 @@ def split_video_to_fixed_frames(videopath, frames_count)->np.ndarray:
     cv2.destroyAllWindows()
     return frames
 
+def loop_gif(gifpath:str):
+    with Image.open(gifpath) as gif:
+        # print(gif.info)
+        gif.info['loop'] = 10
+        gif.save(os.path.join("output_videos", "gifs", "looping.gif"), 'GIF')
+
 if __name__ == '__main__':
 
     videopath  = os.path.join("data", "my_videos", "IMG_9814.MOV")
@@ -120,9 +127,10 @@ if __name__ == '__main__':
     # img_new = cv2.resize(img, (320, 180))
     # cv2.imwrite(os.path.join("logo", "logo.png"), img_new)
 
-    print(get_video_duration(videopath))
-    print(get_w_h_video(videopath))
-    img = take_screenshot(videopath=videopath, timestamp=Seconds(7.0))
-
+    # print(get_video_duration(videopath))
+    # print(get_w_h_video(videopath))
+    # img = take_screenshot(videopath=videopath, timestamp=Seconds(7.0))
     # plt.imshow(img)
     # plt.show()
+
+    loop_gif(os.path.join("output_videos", "gifs", "cartwheel.gif"))
