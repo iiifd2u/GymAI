@@ -4,6 +4,7 @@ import cv2
 import math
 import imageio
 import numpy as np
+from PIL import Image
 import matplotlib.pyplot as plt
 from ultralytics import YOLO
 from shapely import Polygon, MultiPolygon, Point, affinity
@@ -39,7 +40,7 @@ def predict_on_image(model, img, conf=0.5):
                 p_valid.append(prob),
                 b_valid.append(box)
                 sizes.append((box[2]-box[0])*(box[3]-box[1]))
-                print("box = ", box)
+                # print("box = ", box)
 
         am = np.argmax(sizes)
         return b_valid[am], m_valid[am], cls, p_valid[am], result.orig_shape
@@ -181,11 +182,17 @@ def create_combined_images(real_images:List, ideal_polygons:List, img_size:Tuple
                 combo_images.append(cv2.resize(combo_img, img_size))
         return combo_images
 
-def save_gif_with_imageio(savepath:str, combo_images:str, duration = 10, fps = 2):
+def save_gif_with_imageio(savepath:str, combo_images:List[np.ndarray], duration = 10, fps = 2, loop = 1):
     """Сохраняем гифку"""
 
-    kwargs = {'duration':duration, 'fps':fps}
-    imageio.mimsave(uri=savepath, ims=combo_images, format='GIF', **kwargs)
+    # kwargs = {'duration':duration, 'fps':fps, "loop":loop}
+    # imageio.mimsave(uri=savepath, ims=combo_images, format='GIF', **kwargs)
+
+    frames = [Image.fromarray(ci) for ci in combo_images]
+    frames[0].save(savepath, format="GIF", append_images=frames[1:], save_all=True, duration = 200, loop=0)
+
+
+
 
 def create_video_from_real_and_ideal(real_images:List, ideal_polygons:List, savepath:str):
     """
