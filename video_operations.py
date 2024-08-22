@@ -23,10 +23,10 @@ class Seconds:
     def __init__(self, number:float):
         self.seconds =math.floor(number)
         self.minutes = self.seconds // 60
-        self.seconds = self.seconds%60
+        self.seconds = self.seconds % 60
         self.microseconds = int((number-self.seconds)*1000)
     def __str__(self):
-        return f"00:{str(self.minutes).rjust(2, '0')}:{str(self.seconds).rjust(2, '0')}.{str(self.microseconds).rjust(4, '0')}"
+        return f"00:{str(self.minutes).rjust(2, '0')}:{str(self.seconds).rjust(2, '0')}.{str(self.microseconds).rjust(3, '0')}"
         
         
 def get_video_duration(videopath:str):

@@ -24,7 +24,7 @@ print("duration =", video_duration)
 def index(request:Request):
     return templates.TemplateResponse(request=request,
                                       name="index.html",
-                                      context={"duration":math.floor((video_duration-0.1)*100)})
+                                      context={"duration":math.floor((video_duration-0.1)*fps)})
 
 @app.get("/getVideoDuration")
 def get_video_duration():
@@ -32,8 +32,10 @@ def get_video_duration():
     return json.dumps({"duration":video_duration})
 
 @app.get("/getContentByTime/{side}/", responses={200:{"content":{"image/png":{}}}})
-def get_content_by_time(side, timestamp:float = 0):
-
+async def get_content_by_time(side, timestamp:float = 0):
+    print(f"timestamp = {Seconds(timestamp)}")
     cur_frame = take_screenshot(timestamp=Seconds(timestamp), videopath=video_addr)
+    cur_frame = cv2.resize(cur_frame, dsize=(480, 320))
+    cur_frame = cv2.cvtColor(cur_frame, cv2.COLOR_BGR2RGB)
     res, im_png = cv2.imencode(".png", cur_frame)
     return Response(im_png.tobytes(), media_type="image/png")
